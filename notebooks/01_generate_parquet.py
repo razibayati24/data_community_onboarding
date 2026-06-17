@@ -45,19 +45,43 @@ print(f"Scale  : {N_SITES:,} sites · {N_ALARMS:,} alarms")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Step 2 — Create the catalog, schema and Volume
-# MAGIC `IF NOT EXISTS` makes this safe to re-run. You need `CREATE` privileges on the catalog
-# MAGIC (your workspace/metastore admin can grant these). If you don't own a catalog, point the
-# MAGIC `catalog` widget at one you can write to.
+# MAGIC ## Step 2 — Create (or reuse) the catalog, schema and Volume
+# MAGIC This is **permission-tolerant**: it *tries* to create each object, but if you lack `CREATE`
+# MAGIC privileges it quietly skips and **falls back to using what's already there**. The assumption is
+# MAGIC that you at least have access to an existing catalog + schema (and a writable Volume) — so we
+# MAGIC **check that first** and stop with a clear message if not.
+# MAGIC
+# MAGIC > No `CREATE CATALOG` rights? Just point the `catalog`/`schema`/`volume` widgets at ones you
+# MAGIC > can already write to — the notebook will use them as-is.
 
 # COMMAND ----------
 
-spark.sql(f"CREATE CATALOG IF NOT EXISTS {catalog}")
-spark.sql(f"CREATE SCHEMA  IF NOT EXISTS {catalog}.{schema}")
-spark.sql(f"CREATE VOLUME  IF NOT EXISTS {catalog}.{schema}.{volume}")
-spark.sql(f"USE CATALOG {catalog}")
-spark.sql(f"USE SCHEMA  {schema}")
-print(f"Ready: {catalog}.{schema}.{volume}")
+def try_sql(stmt, label):
+    """Run a statement; return True on success, False (with a note) if it's not permitted."""
+    try:
+        spark.sql(stmt)
+        return True
+    except Exception as e:
+        print(f"  ⚠️  Skipped — {label}: {str(e).splitlines()[0][:140]}")
+        return False
+
+# 1) Try to create catalog / schema / volume, but tolerate missing CREATE privileges.
+try_sql(f"CREATE CATALOG IF NOT EXISTS {catalog}",                 "create catalog")
+try_sql(f"CREATE SCHEMA  IF NOT EXISTS {catalog}.{schema}",        "create schema")
+try_sql(f"CREATE VOLUME  IF NOT EXISTS {catalog}.{schema}.{volume}", "create volume")
+
+# 2) Check first — you MUST be able to use the catalog + schema to continue.
+assert try_sql(f"USE CATALOG {catalog}", "use catalog"), \
+    f"❌ No access to catalog '{catalog}'. Point the widget at one you can write to, or ask an admin."
+assert try_sql(f"USE SCHEMA {schema}", "use schema"), \
+    f"❌ No access to schema '{catalog}.{schema}'. Point the widget at one you can write to, or ask an admin."
+
+# 3) The Volume must exist to land Parquet (creation above may have been skipped).
+if not try_sql(f"DESCRIBE VOLUME {catalog}.{schema}.{volume}", "describe volume"):
+    raise Exception(f"❌ Volume '{vol_path}' not available. Set the 'volume' widget to an existing "
+                    f"Volume you can write to, or ask an admin to create it.")
+
+print(f"✅ Using {catalog}.{schema} · Volume {vol_path}")
 
 # COMMAND ----------
 

@@ -132,10 +132,13 @@ display(preview.limit(20))
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- Turn the raw Parquet into queryable tables (CTAS straight off the Volume)
-# MAGIC CREATE OR REPLACE TABLE alarms_raw AS
+# MAGIC -- Turn the raw Parquet into queryable tables (CTAS straight off the Volume).
+# MAGIC -- DROP IF EXISTS first so re-running never errors on a schema mismatch — drop & recreate clean.
+# MAGIC DROP TABLE IF EXISTS alarms_raw;
+# MAGIC DROP TABLE IF EXISTS sites_raw;
+# MAGIC CREATE TABLE alarms_raw AS
 # MAGIC   SELECT * FROM read_files('/Volumes/${catalog}/${schema}/${volume}/alarms/', format => 'parquet');
-# MAGIC CREATE OR REPLACE TABLE sites_raw AS
+# MAGIC CREATE TABLE sites_raw AS
 # MAGIC   SELECT * FROM read_files('/Volumes/${catalog}/${schema}/${volume}/sites/', format => 'parquet');
 
 # COMMAND ----------

@@ -9,8 +9,14 @@ No external data and no pre-existing Volume required — notebook 01 generates e
 ## Prerequisites
 
 - A Databricks workspace with **Unity Catalog** and **serverless** (or any running compute).
-- `CREATE` privilege on a catalog you can write to. Don't have one? Point the `catalog` widget at an
-  existing catalog/schema where you have write access (the notebooks use `IF NOT EXISTS`).
+- Write access to **a catalog + schema + Volume**. `CREATE` privilege is nice-to-have but **not
+  required**: notebook 01 *tries* to create the catalog/schema/Volume and, if you lack permission,
+  **skips creation and uses the existing ones** named in the widgets (it checks access first and
+  stops with a clear message if they aren't reachable). So if you can't create a catalog, just point
+  the widgets at one you can already write to.
+
+Prefer clicking over code? See **[docs/ui_guide.md](docs/ui_guide.md)** — the same steps
+(browse the catalog, create a table from a Volume file, explore in the SQL Editor) done in the UI.
 
 ## How to run
 

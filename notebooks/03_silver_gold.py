@@ -42,7 +42,9 @@ print(f"Building Silver + Gold in {catalog}.{schema}")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE OR REPLACE TABLE silver_alarms AS
+# MAGIC -- Drop & recreate so re-runs never error on an existing table / changed schema.
+# MAGIC DROP TABLE IF EXISTS silver_alarms;
+# MAGIC CREATE TABLE silver_alarms AS
 # MAGIC WITH raw_alarms AS (
 # MAGIC   SELECT * FROM read_files('/Volumes/${catalog}/${schema}/${volume}/alarms/', format => 'parquet')
 # MAGIC ),
@@ -94,7 +96,9 @@ print(f"Building Silver + Gold in {catalog}.{schema}")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE OR REPLACE TABLE gold_site_health AS
+# MAGIC -- Drop & recreate so re-runs never error on an existing table / changed schema.
+# MAGIC DROP TABLE IF EXISTS gold_site_health;
+# MAGIC CREATE TABLE gold_site_health AS
 # MAGIC SELECT
 # MAGIC   site_id,
 # MAGIC   MAX(site_name)       AS site_name,
