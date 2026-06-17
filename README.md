@@ -31,6 +31,7 @@ Prefer clicking over code? See **[docs/ui_guide.md](docs/ui_guide.md)** — the 
 | 2 | [`02_explore_raw`](notebooks/02_explore_raw.py) | Read-only profiling — nulls, duplicates, distributions, the join — in **PySpark** and in **SQL** (paste into the SQL Editor). |
 | 3 | [`03_silver_gold`](notebooks/03_silver_gold.py) | Builds **`silver_alarms`** (join + clean + dedupe) and **`gold_site_health`** (per-site KPIs, `fault_score`, coordinates) with SQL. |
 | 4 | [`observability/04_table_observability`](observability/04_table_observability.py) | Once the tables exist: audit **who's querying** them (`system.access.audit`), **who's granted** access, **lineage**, table history — and a template to **notify users automatically** on a schedule. |
+| 5 | [`dashboard/`](dashboard/README.md) | The exec **AI/BI dashboard** on `gold_site_health` — KPIs, a fault **map**, regional bars, worst-sites table, and an alarm forecast. Import the `.lvdash.json` and point it at a warehouse. |
 
 Defaults (1,000 sites · 200,000 alarms) run in well under a minute on serverless. Bump the
 `num_sites` / `num_alarms` widgets on notebook 01 for a heavier dataset.

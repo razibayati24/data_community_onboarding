@@ -1,0 +1,582 @@
+{
+  "datasets": [
+    {
+      "name": "kpi_677e4972",
+      "displayName": "KPIs",
+      "queryLines": [
+        "SELECT SUM(critical_alarms) total_critical, SUM(active_alarms) total_active, ROUND(AVG(avg_mttr_min),1) network_mttr, COUNT(*) sites FROM cmegdemos_catalog.att_data_community.gold_site_health"
+      ]
+    },
+    {
+      "name": "gold_24d50784",
+      "displayName": "Site health",
+      "queryLines": [
+        "SELECT\n",
+        "  site_id,\n",
+        "  site_name,\n",
+        "  region,\n",
+        "  state,\n",
+        "  vendor,\n",
+        "  equipment_type,\n",
+        "  latitude,\n",
+        "  longitude,\n",
+        "  total_alarms,\n",
+        "  critical_alarms,\n",
+        "  active_alarms,\n",
+        "  avg_mttr_min,\n",
+        "  fault_score\n",
+        "FROM\n",
+        "  cmegdemos_catalog.att_data_community.gold_site_health"
+      ]
+    },
+    {
+      "name": "region_40df9f85",
+      "displayName": "By region",
+      "queryLines": [
+        "SELECT region, COUNT(*) sites, SUM(critical_alarms) critical_alarms, SUM(active_alarms) active_alarms, ROUND(AVG(avg_mttr_min),1) avg_mttr FROM cmegdemos_catalog.att_data_community.gold_site_health GROUP BY region"
+      ]
+    },
+    {
+      "name": "top_db0980a6",
+      "displayName": "Top sites",
+      "queryLines": [
+        "SELECT\n",
+        "  site_id,\n",
+        "  site_name,\n",
+        "  region,\n",
+        "  state,\n",
+        "  vendor,\n",
+        "  fault_score\n",
+        "FROM\n",
+        "  cmegdemos_catalog.att_data_community.gold_site_health\n",
+        "ORDER BY\n",
+        "  fault_score DESC\n",
+        "LIMIT 15"
+      ]
+    },
+    {
+      "name": "alarm_forecast",
+      "displayName": "Alarm Forecast by Region",
+      "queryLines": [
+        "WITH daily_alarms AS (\n",
+        "  SELECT\n",
+        "    CAST(event_date AS TIMESTAMP) AS ds,\n",
+        "    COUNT(*) AS alarm_count\n",
+        "  FROM\n",
+        "    cmegdemos_catalog.att_data_community.silver_alarms\n",
+        "  GROUP BY\n",
+        "    event_date\n",
+        "),\n",
+        "forecasted AS (\n",
+        "  SELECT\n",
+        "    *\n",
+        "  FROM\n",
+        "    ai_forecast(\n",
+        "      TABLE(daily_alarms),\n",
+        "      horizon => CAST('2026-06-22' AS TIMESTAMP),\n",
+        "      time_col => 'ds',\n",
+        "      value_col => 'alarm_count',\n",
+        "      parameters => '{\"global_floor\": 0}'\n",
+        "    )\n",
+        ")\n",
+        "SELECT\n",
+        "  ds,\n",
+        "  alarm_count AS actual,\n",
+        "  CAST(NULL AS DOUBLE) AS forecast\n",
+        "FROM\n",
+        "  daily_alarms\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  ds,\n",
+        "  CAST(NULL AS DOUBLE),\n",
+        "  CAST(alarm_count AS DOUBLE)\n",
+        "FROM\n",
+        "  daily_alarms\n",
+        "WHERE\n",
+        "  ds\n",
+        "    = (\n",
+        "      SELECT\n",
+        "        MAX(ds)\n",
+        "      FROM\n",
+        "        daily_alarms\n",
+        "    )\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  ds,\n",
+        "  CAST(NULL AS DOUBLE),\n",
+        "  alarm_count_forecast\n",
+        "FROM\n",
+        "  forecasted"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "p_b45f1db9",
+      "displayName": "Network Health",
+      "layout": [
+        {
+          "widget": {
+            "name": "w_69bfe0fd",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpi_677e4972",
+                  "fields": [
+                    {
+                      "name": "total_critical",
+                      "expression": "`total_critical`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Critical alarms"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_critical"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "w_52b5a3e6",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpi_677e4972",
+                  "fields": [
+                    {
+                      "name": "total_active",
+                      "expression": "`total_active`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Active alarms"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_active"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "w_391d898b",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "kpi_677e4972",
+                  "fields": [
+                    {
+                      "name": "network_mttr",
+                      "expression": "`network_mttr`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Network MTTR (min)"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "network_mttr"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "w_c946559f",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "top_db0980a6",
+                  "fields": [
+                    {
+                      "name": "site_id",
+                      "expression": "`site_id`"
+                    },
+                    {
+                      "name": "site_name",
+                      "expression": "`site_name`"
+                    },
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    },
+                    {
+                      "name": "state",
+                      "expression": "`state`"
+                    },
+                    {
+                      "name": "vendor",
+                      "expression": "`vendor`"
+                    },
+                    {
+                      "name": "fault_score",
+                      "expression": "`fault_score`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Top 15 sites by fault score"
+              },
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "site_id",
+                    "displayName": "Site ID"
+                  },
+                  {
+                    "fieldName": "site_name",
+                    "displayName": "Site Name"
+                  },
+                  {
+                    "fieldName": "region",
+                    "displayName": "Region"
+                  },
+                  {
+                    "fieldName": "state",
+                    "displayName": "State"
+                  },
+                  {
+                    "fieldName": "vendor",
+                    "displayName": "Vendor"
+                  },
+                  {
+                    "fieldName": "fault_score",
+                    "displayName": "Fault Score"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 8,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "w_4bcf2232",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "region_40df9f85",
+                  "fields": [
+                    {
+                      "name": "critical_alarms",
+                      "expression": "`critical_alarms`"
+                    },
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "Critical alarms by region"
+              },
+              "mark": {
+                "colors": [
+                  "#FF3621"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "critical_alarms",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "region",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "x-reversed"
+                    }
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 3,
+            "width": 4,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "w_b746dd62",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "gold_24d50784",
+                  "fields": [
+                    {
+                      "name": "equipment_type",
+                      "expression": "`equipment_type`"
+                    },
+                    {
+                      "name": "latitude",
+                      "expression": "`latitude`"
+                    },
+                    {
+                      "name": "longitude",
+                      "expression": "`longitude`"
+                    },
+                    {
+                      "name": "critical_alarms",
+                      "expression": "`critical_alarms`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Sites by equipment type"
+              },
+              "widgetType": "symbol-map",
+              "encodings": {
+                "coordinates": {
+                  "latitude": {
+                    "fieldName": "latitude"
+                  },
+                  "longitude": {
+                    "fieldName": "longitude"
+                  }
+                },
+                "color": {
+                  "fieldName": "equipment_type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "size": {
+                  "fieldName": "critical_alarms",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "w_51b3fab3",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "region_40df9f85",
+                  "fields": [
+                    {
+                      "name": "active_alarms",
+                      "expression": "`active_alarms`"
+                    },
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Active alarms by region"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#2196F3"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "active_alarms",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "region",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "x-reversed"
+                    }
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "0105d22d",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "alarm_forecast",
+                  "fields": [
+                    {
+                      "name": "ds",
+                      "expression": "`ds`"
+                    },
+                    {
+                      "name": "actual",
+                      "expression": "`actual`"
+                    },
+                    {
+                      "name": "forecast",
+                      "expression": "`forecast`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "frame": {
+                "showTitle": true,
+                "title": "Total Alarm Forecast"
+              },
+              "widgetType": "forecast-line",
+              "encodings": {
+                "x": {
+                  "fieldName": "ds",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "original": {
+                    "fieldName": "actual"
+                  },
+                  "prediction": {
+                    "fieldName": "forecast"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 24,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    }
+  }
+}
