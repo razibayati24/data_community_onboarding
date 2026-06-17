@@ -33,6 +33,7 @@ Prefer clicking over code? See **[docs/ui_guide.md](docs/ui_guide.md)** — the 
 | 4 | [`observability/04_table_observability`](observability/04_table_observability.py) | Once the tables exist: audit **who's querying** them (`system.access.audit`), **who's granted** access, **lineage**, table history — and a template to **notify users automatically** on a schedule. |
 | 5 | [`dashboard/`](dashboard/README.md) | The exec **AI/BI dashboard** on `gold_site_health` — KPIs, a fault **map**, regional bars, worst-sites table, and an alarm forecast. Import the `.lvdash.json` and point it at a warehouse. |
 | 6 | [`genie/05_create_genie_room`](genie/05_create_genie_room.py) | Builds a **Genie room** (natural-language Q&A) on `gold_site_health` + `silver_alarms` via the API — with instructions, example SQL, and benchmark questions so "worst sites" ranks by `fault_score`. |
+| 7 | [`genie/07_genie_plus_benchmark`](genie/07_genie_plus_benchmark.py) | **Benchmark → tune → re-benchmark**: scores Genie answers against ground truth, adds advanced instructions + join/SQL samples, re-scores, and prints the before→after accuracy lift. |
 
 Defaults (1,000 sites · 200,000 alarms) run in well under a minute on serverless. Bump the
 `num_sites` / `num_alarms` widgets on notebook 01 for a heavier dataset.
