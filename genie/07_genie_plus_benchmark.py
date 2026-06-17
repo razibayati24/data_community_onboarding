@@ -4,7 +4,7 @@
 # MAGIC
 # MAGIC This notebook **measures** how much Genie instructions actually help. It:
 # MAGIC 1. Builds a throwaway **benchmark room** on your tables, seeded with the *base* instructions
-# MAGIC    from notebook 05.
+# MAGIC    from notebook 06.
 # MAGIC 2. **Round 1** — asks a set of benchmark questions and scores each answer against ground
 # MAGIC    truth computed directly from your tables.
 # MAGIC 3. Adds **more instructions + join/SQL samples** targeting the questions that fail.
@@ -131,7 +131,7 @@ BENCHMARKS = [
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Build the benchmark room with the **base** instructions (mirrors notebook 05)
+# MAGIC ## Build the benchmark room with the **base** instructions (mirrors notebook 06)
 
 # COMMAND ----------
 

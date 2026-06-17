@@ -15,7 +15,7 @@ No external data and no pre-existing Volume required — **notebook 01 generates
   uses the existing ones** named in the widgets (it checks access first and stops with a clear
   message if they aren't reachable). Can't create a catalog? Just point the widgets at one you can
   already write to.
-- A **SQL warehouse** — used by the dashboard and the Genie notebooks (05, 07).
+- A **SQL warehouse** — used by the dashboard and the Genie notebooks (06, 07).
 - **Optional:** read access to `system.access.*` for the full observability notebook (04). It's an
   account-level grant from a metastore/account admin; the rest of the repo works without it.
 
@@ -36,7 +36,7 @@ a table from a Volume file, and explore in the SQL Editor, all in the UI.
 | **3 · Model** | [`notebooks/03_silver_gold`](notebooks/03_silver_gold.py) | Builds **`silver_alarms`** (join + clean + dedupe) and **`gold_site_health`** (per-site KPIs, `fault_score`, coordinates) with SQL. |
 | **4 · Govern** | [`observability/04_table_observability`](observability/04_table_observability.py) | Audit **who's querying** the tables (`system.access.audit`), **who's granted** access, **lineage**, table history — plus a template to **email users automatically** on a schedule. |
 | **5 · Visualize** | [`dashboard/`](dashboard/README.md) | The exec **AI/BI dashboard** on `gold_site_health` — KPIs, a fault **map**, regional bars, worst-sites table, an alarm forecast. Import the `.lvdash.json`, point it at a warehouse. |
-| **6 · Ask** | [`genie/05_create_genie_room`](genie/05_create_genie_room.py) | Builds a **Genie room** (natural-language Q&A) on Gold + Silver via the API — instructions, example SQL, and benchmark questions so "worst sites" ranks by `fault_score`. |
+| **6 · Ask** | [`genie/06_create_genie_room`](genie/06_create_genie_room.py) | Builds a **Genie room** (natural-language Q&A) on Gold + Silver via the API — instructions, example SQL, and benchmark questions so "worst sites" ranks by `fault_score`. |
 | **7 · Prove** | [`genie/07_genie_plus_benchmark`](genie/07_genie_plus_benchmark.py) | **Benchmark → tune → re-benchmark**: scores Genie answers against ground truth, adds advanced instructions + join/SQL samples, re-scores, and prints the before→after accuracy lift. |
 
 Steps 1–3 are the core path and run in well under a minute on serverless (defaults: 1,000 sites ·
@@ -50,7 +50,7 @@ data_community_onboarding/
 ├── notebooks/        01 generate · 02 explore · 03 silver+gold   (the core path)
 ├── observability/    04 audit usage / grants / lineage + notify
 ├── dashboard/        exec dashboard (.lvdash.json) + import guide
-├── genie/            05 create Genie room · 07 benchmark & tune
+├── genie/            06 create Genie room · 07 benchmark & tune
 └── docs/             ui_guide.md — the point-and-click path
 ```
 
@@ -63,9 +63,6 @@ data_community_onboarding/
 
 `fault_score` is severity-weighted (**Critical 10 · Major 5 · Minor 2 · Warning 1**) — the single
 metric everything ranks "worst sites" by, from the dashboard to Genie.
-
-> **Note on file numbers:** the Genie notebooks keep their original demo names (`05`, `07`); read the
-> **Step** column above for run order, not the filename digits.
 
 ## Extend it
 

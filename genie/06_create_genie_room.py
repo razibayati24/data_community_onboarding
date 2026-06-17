@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 05 · Create the Genie room (natural-language Q&A on Gold)
+# MAGIC # 06 · Create the Genie room (natural-language Q&A on Gold)
 # MAGIC
 # MAGIC A Genie room (a.k.a. data room / Genie space) lets people ask questions in plain English and get
 # MAGIC SQL-backed answers. Unlike the dashboard, a Genie space isn't a single importable file — so this
